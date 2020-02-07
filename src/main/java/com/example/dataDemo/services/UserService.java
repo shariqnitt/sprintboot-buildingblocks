@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.dataDemo.entities.User;
+import com.example.dataDemo.exceptions.UserExistsException;
+import com.example.dataDemo.exceptions.UserNotFoundException;
 import com.example.dataDemo.repositories.UserRepository;
 
 @Service
@@ -21,12 +23,20 @@ public class UserService {
 	}
 	
 	
-	public User createUser(User user) {
+	public User createUser(User user) throws UserExistsException{
+		User existingUser = userRepository.findByUsername(user.getUsername());
+		if(existingUser != null) {
+			throw new UserExistsException("User Already Exists");
+		}
+		
 		return userRepository.save(user);
 	}
 	
-	public Optional<User> getUserById(Long id) {
+	public Optional<User> getUserById(Long id) throws UserNotFoundException {
 		Optional<User> user = userRepository.findById(id);
+		if(!user.isPresent()) {
+			throw new UserNotFoundException("User with ID:" + id + " not present");
+		}
 		return user;
 		
 	}
